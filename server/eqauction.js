@@ -34,7 +34,8 @@ if (Meteor.isServer) {
 
         for(var j=i; j<parts.length && sell; j++){ 
           match += " " + parts[j];
-          if(lookup = Items.findOne({name: /match.trim()/i})){
+          var matchRe = new RegExp(match.trim(), "i")
+          if(lookup = Items.findOne({name: matchRe})){
               itemMatch = match.trim()
               matchPosition = j
           }
