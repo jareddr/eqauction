@@ -25,9 +25,24 @@
 </template>
 
 <template name="auctions">
-{{#each matches}}
-	<a href="{{link}}" target="_blank">{{name}}</a> : {{cost}}<br/>
+<table>
+<thead>
+<tr>
+<th>Player</th><th>Action</th><th>Item</th><th>Cost</th><th>Updated</th>
+</tr>
+</thead>
+<tbody>
+{{#each auctions}}
+	<tr>
+	<td>{{player}}</td>
+	<td>{{#if selling}}WTS{{else}}WTB{{/if}}</td>
+	<td>{{name}}</td>
+	<td align='right'>{{cost}}</td>
+	<td>{{updated_at}}</td>
+	</tr>
 {{/each}}
+</tbody>
+</table>
 </template>
 
 <template name="loading">

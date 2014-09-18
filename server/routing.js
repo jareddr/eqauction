@@ -18,7 +18,8 @@ if (Meteor.isServer){
 	      	this.response.end("Request must supply auction data");
 	      	return
 	      }
-	      Auctions.insert({raw: data.line})
+	      Meteor.call("parseAuction", data.line)
+	      Log.insert({raw: data.line})
 	      this.response.writeHead(200, {'Content-Type': 'text/html'});
 	      this.response.end("ok.");
 	    }

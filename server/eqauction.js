@@ -11,10 +11,13 @@ if (Meteor.isServer) {
 
 
   Meteor.methods({
-    parseAunction: function(line){
+    parseAuction: function(line){
       var parts = line.replace(/,|\|\/\\/ig, "").trim().split(/\s+/)
       var sell = true;
       var matches = [];
+      var player = line.match(/\] ([^\s]+) auctions/) ? line.match(/\] ([^\s]+) auctions/)[1] : null
+      var now = new Date()
+      var date = now.getFullYear() + "-" + now.getMonth() + "-" + now.getDate()
       for(var i=0; i<parts.length; i++){
         var match="";
         var lookup = false;
@@ -29,7 +32,7 @@ if (Meteor.isServer) {
         for(var j=i; j<parts.length && sell; j++){ 
           match += " " + parts[j];
           if(lookup = Items.findOne({name: match.trim()})){
-              itemMatch = item
+              itemMatch = match.trim()
               matchPosition = j
           }
         }
@@ -39,16 +42,26 @@ if (Meteor.isServer) {
           var link = "http://wiki.project1999.com/" + itemMatch.replace(/'/g, "%27").replace(/ /,"_")
           var cost = false;
           if(parts[i+1].match(/\d+/)){
-            cost = parts[i+1].match(/\d+\.*\d*/)[0]
+            cost = parseInt(parts[i+1].match(/\d+\.*\d*/)[0])
             if(parts[i+1].match(/k$/i))
               cost = cost * 1000
           }
 
-          matches.push({name: itemMatch, link: link, cost: cost})
-          
+          var existing = Auctions.findOne({player:player, date:date, name: itemMatch})
+          if(existing && existing.cost > cost){
+              //console.log("Updating " + existing.player+":"+existing.name + " to " + cost)
+              Auctions.update({_id:existing._id}, {$set: {cost:cost, updated_at: new Date()}})
+          }
+          else if(existing){
+              Auctions.update({_id:existing._id}, {$set: {updated_at: new Date()}})
+          }
+          else{
+            //console.log("Inserting:")
+            //console.log({player: player, date: date, name: itemMatch, cost: cost, created_at: new Date(), updated_at: new Date()})
+            Auctions.insert({player: player, sell:sell, date: date, name: itemMatch, original_cost: cost, cost: cost, created_at: new Date(), updated_at: new Date()})  
+          }
         }
       }
-      return matches
     }
   });
 
@@ -60,5 +73,13 @@ if (Meteor.isServer) {
           Items.insert({name: item})
       })
     }
+
+    Auctions.find({raw: {$exists: true}}).forEach(function(l){
+      Auctions.remove({_id: l._id})
+      Meteor.call("parseAuction", l.raw)
+    })
+
+    
+
   });
 }

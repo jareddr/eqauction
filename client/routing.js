@@ -19,7 +19,7 @@ if (Meteor.isClient) {
   			path: '/', waitOn: function(){ 
   				return [Meteor.subscribe("auctions"), Meteor.subscribe("items")]
   			},
-  			data: function() { return {auctions: Auctions.find().fetch()} }
+  			data: function() { return {auctions: Auctions.find({cost: {$gt:0}},{sort: {updated_at:-1}}).fetch()} }
   		})
 	})
 	
