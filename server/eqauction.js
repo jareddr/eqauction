@@ -9,6 +9,9 @@ if (Meteor.isServer) {
     return Auctions.find({});
   });
 
+//if ever want to price check on project1999 wiki
+//$('body').html().match(/<td>\s*(\d\d\d\d-\d\d-\d\d)\s*<\/td>\s*<td>\s*([^<]+)<\/td>\s*<td>\s*(\d+)\s*<\/td>/g)[1].replace(/^<td>/,"").replace(/<\/td>$/,"").split(/<\/td>\s*<td>/)
+
 
   Meteor.methods({
     parseAuction: function(line){
@@ -31,7 +34,7 @@ if (Meteor.isServer) {
 
         for(var j=i; j<parts.length && sell; j++){ 
           match += " " + parts[j];
-          if(lookup = Items.findOne({name: match.trim()})){
+          if(lookup = Items.findOne({name: /match.trim()/i})){
               itemMatch = match.trim()
               matchPosition = j
           }
