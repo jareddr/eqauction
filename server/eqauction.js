@@ -15,7 +15,8 @@ if (Meteor.isServer) {
 
   Meteor.methods({
     parseAuction: function(line){
-      var parts = line.replace(/,|\|\/\\/ig, "").trim().split(/\s+/)
+      var parts = line.replace(/,/ig, "").replace(/\|\/\\-/ig, " ").replace(/ '/," ").replace(/([^\d^\.])(\d)/g, "$1 $2").replace(/\s+/, " ").trim().split(/\s+/)
+      console.log(line.replace(/,/ig, "").replace(/\|\/\\-/ig, " ").replace(/ '/," ").replace(/([^\d^\.])(\d)/g, "$1 $2").replace(/\s+/, " ").trim())
       var sell = true;
       var matches = [];
       var player = line.match(/\] ([^\s]+) auctions/) ? line.match(/\] ([^\s]+) auctions/)[1] : null
@@ -34,9 +35,11 @@ if (Meteor.isServer) {
 
         for(var j=i; j<parts.length && sell; j++){ 
           match += " " + parts[j];
-          var matchRe = new RegExp(match.trim(), "i")
+          var matchRe = new RegExp("^" + match.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + "$", "i")
+          //console.log(matchRe)
           if(lookup = Items.findOne({name: matchRe})){
-              itemMatch = match.trim()
+              //console.log(lookup)
+              itemMatch = lookup.name
               matchPosition = j
           }
         }
@@ -46,10 +49,11 @@ if (Meteor.isServer) {
           var link = "http://wiki.project1999.com/" + itemMatch.replace(/'/g, "%27").replace(/ /,"_")
           var cost = false;
           if(parts[i+1].match(/\d+/)){
-            cost = parseInt(parts[i+1].match(/\d+\.*\d*/)[0])
-            if(parts[i+1].match(/k$/i))
-              cost = cost * 1000
+            cost = parts[i+1].match(/\d+\.*\d*/)[0]
+            if(parts[i+1].match(/k$/i) || cost.match(/\./))
+              cost = parseFloat(cost) * 1000
           }
+          cost = cost ? parseInt(cost) : false
 
           var existing = Auctions.findOne({player:player, date:date, name: itemMatch})
           if(existing && existing.cost > cost){
