@@ -28,7 +28,7 @@
 <table>
 <thead>
 <tr>
-<th>Player</th><th>Action</th><th>Item</th><th>Cost</th><th>Updated</th>
+<th>Player</th><th>Action</th><th>Item</th><th>Cost</th><th>Market Value</th><th>Updated</th>
 </tr>
 </thead>
 <tbody>
@@ -38,6 +38,7 @@
 	<td>{{#if sell}}WTS{{else}}WTB{{/if}}</td>
 	<td>{{name}}</td>
 	<td align='right'>{{cost}}</td>
+	<td align='right'>{{market_price}}</td>
 	<td>{{updated_at}}</td>
 	</tr>
 {{/each}}
