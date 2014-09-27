@@ -26,6 +26,7 @@ iron:layout@0.4.1
 iron:router@0.9.3
 jquery@1.0.0
 json@1.0.0
+less@1.0.8
 livedata@1.0.9
 logging@1.0.3
 meteor-platform@1.1.0
@@ -34,6 +35,7 @@ minifiers@1.1.0
 minimongo@1.0.3
 mobile-status-bar@1.0.0
 mongo@1.0.5
+mrt:ionicons@1.4.1
 mrt:moment@2.8.1
 mrt:nprogress@0.1.0
 observe-sequence@1.0.2

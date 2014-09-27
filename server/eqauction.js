@@ -1,6 +1,19 @@
 
 if (Meteor.isServer) {
 
+  getMedian = function(prices){
+    prices.sort( function(a,b) {return a - b;} );
+    var median = false      
+    var half = Math.floor(prices.length/2);
+
+    if(prices.length % 2)
+        median =  prices[half];
+    else
+        median = (prices[half-1] + prices[half]) / 2
+
+    return median
+  }
+
   Meteor.publish("items", function () {
     return Items.find({});
   });
@@ -8,6 +21,14 @@ if (Meteor.isServer) {
   Meteor.publish("auctions", function () {
     return Auctions.find({});
   });
+
+  Meteor.publish("wts", function(){
+    return WTS.find({})
+  })
+
+  Meteor.publish("wtb", function(){
+    return WTB.find({})
+  })  
 
 //if ever want to price check on project1999 wiki
 //$('body').html().match(/<td>\s*(\d\d\d\d-\d\d-\d\d)\s*<\/td>\s*<td>\s*([^<]+)<\/td>\s*<td>\s*(\d+)\s*<\/td>/g)[1].replace(/^<td>/,"").replace(/<\/td>$/,"").split(/<\/td>\s*<td>/)
@@ -61,6 +82,13 @@ if (Meteor.isServer) {
           Meteor.call('getWikiAverage', itemId)
           var item = Items.findOne({_id: itemId})
           var existing = Auctions.findOne({player:player, date:date, name: itemMatch})
+          var a = Auctions.find({name:itemMatch, sell:true, cost: {$ne: 0}}).fetch()
+          console.log("==============MEDIAN================")
+          console.log(a)
+          console.log(_.pluck(a, "cost"))
+          console.log(getMedian(_.pluck(a, "cost")))
+          var localMedian = parseInt(getMedian(_.pluck(a, "cost")))
+          
           if(existing && existing.cost > cost){
               //console.log("Updating " + existing.player+":"+existing.name + " to " + cost)
               Auctions.update({_id:existing._id}, {$set: {cost:cost, updated_at: new Date()}})
@@ -70,11 +98,24 @@ if (Meteor.isServer) {
           }
           else{
             //console.log("Inserting:")
-            //console.log({player: player, date: date, name: itemMatch, cost: cost, created_at: new Date(), updated_at: new Date()})
-            Auctions.insert({player: player, sell:sell, item_id: item._id, market_price: item.market_price, date: date, name: itemMatch, original_cost: cost, cost: cost, created_at: new Date(), updated_at: new Date()})  
+            //console.log({player: player, sell:sell, median_cost: localMedian, item_id: item._id, market_price: item.market_price, date: date, name: itemMatch, original_cost: cost, cost: cost, created_at: new Date(), updated_at: new Date()})
+            Auctions.insert({player: player, sell:sell, median_cost: localMedian, item_id: item._id, market_price: item.market_price, date: date, name: itemMatch, original_cost: cost, cost: cost, created_at: new Date(), updated_at: new Date()})  
           }
         }
       }
+    },
+    addWtb: function(item){
+      WTB.upsert({name: item}, {name:item})
+
+    },
+    removeWtb: function(item){
+      WTB.remove({name: item})
+    },
+    addWts: function(item){
+      WTS.upsert({name:item}, {name:item})
+    },
+    removeWts: function(){
+      WTS.remove({name:item})
     },
     getWikiAverage: function(item_id){
       var item = Items.findOne({_id: item_id})
@@ -93,19 +134,10 @@ if (Meteor.isServer) {
               prices.push(parseInt(cost.trim()))
             })
 
-            //grab median price and store it
-               prices.sort( function(a,b) {return a - b;} );
-           
-              var half = Math.floor(prices.length/2);
-           
-              if(prices.length % 2)
-                  median =  prices[half];
-              else
-                  median = (prices[half-1] + prices[half]) / 2
-                //console.log(median)
-                Items.update({_id: item_id}, 
-                  {$set: {market_price: median}})
-                Auctions.update({item_id: item_id}, {$set: {market_price: median}}, {multi:true})
+            median = getMedian(prices)
+            //console.log(median)
+            Items.update({_id: item_id}, {$set: {market_price: median}})
+            Auctions.update({item_id: item_id}, {$set: {market_price: median}}, {multi:true})
         });
       }
     }

@@ -17,9 +17,9 @@ if (Meteor.isClient) {
 	Router.map(function() {
 	  	this.route('auctions', {
   			path: '/', waitOn: function(){ 
-  				return [Meteor.subscribe("auctions"), Meteor.subscribe("items")]
+  				return [Meteor.subscribe("auctions"), Meteor.subscribe("items"), Meteor.subscribe("wtb"), Meteor.subscribe("wts") ]
   			},
-  			data: function() { return {auctions: Auctions.find({cost: {$gt:0}},{sort: {updated_at:-1}}).fetch()} }
+  			data: function() { return {auctions: Auctions.find({cost: {$gt:0}},{sort: {updated_at:-1}}).fetch(), wtb: WTB.find({}).fetch(), wts: WTS.find({}).fetch()} }
   		})
 	})
 	

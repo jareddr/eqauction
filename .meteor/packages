@@ -9,4 +9,6 @@ iron:router
 mrt:nprogress
 mrt:moment
 http
+mrt:ionicons
+less
 
