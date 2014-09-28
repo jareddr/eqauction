@@ -193,8 +193,8 @@ if (Meteor.isServer) {
   });
 
   Meteor.startup(function () {
-  process.env.MAIL_URL = 'smtp://postmaster%40sandboxa9cfd64934274ff09eb05082306802e1.mailgun.org:1fe26a78161421c06265cd2b858186c6@smtp.mailgun.org:587';
-    //import item db
+  console.log(process.env.MAIL_URL)
+   //import item db
     if(!Items.findOne()){
         _.each(Assets.getText("items.txt").split("\n"), function(item){
           Items.insert({name: item})
