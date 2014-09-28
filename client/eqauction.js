@@ -18,8 +18,6 @@ if (Meteor.isClient) {
 		},
 		dealWatch: function(){
 			var baseCompare = _.max([parseInt(this.median_cost), parseInt(this.market_price)])
-			console.log(baseCompare)
-			console.log(this)
 			if(this.cost <= baseCompare * 0.50)
 				return "crazydeal"
 			else if (this.cost < baseCompare * 0.75)

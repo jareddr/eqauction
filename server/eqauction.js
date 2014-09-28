@@ -1,6 +1,39 @@
 
 if (Meteor.isServer) {
 
+
+  var xmpp = Meteor.npmRequire('node-xmpp')
+
+  sendAlert = function(text){
+      var client = new xmpp.Client({
+      jid: Meteor.settings.chat_login,
+      password: Meteor.settings.chat_password,
+      host        : 'talk.google.com',
+      port        : 5222    
+      })
+
+      client.on('online', function() {
+          console.log('online')
+          client.send(new xmpp.Element('presence', { type: 'available' }).
+              c('show').t('chat')
+             );
+
+          client.send(new xmpp.Element('message',
+            { to: "jaredr@betabrand.com", // to
+                type: 'chat'}).
+                c('body').
+                t(text));
+      })
+
+      client.on('error', function(error) {
+          console.log(error)
+        })
+
+      client.on('stanza', function(stanza) {
+          //console.log(stanza)
+      })
+  }
+
   getMedian = function(prices){
     prices.sort( function(a,b) {return a - b;} );
     var median = false      
@@ -83,12 +116,7 @@ if (Meteor.isServer) {
           var item = Items.findOne({_id: itemId})
           var existing = Auctions.findOne({player:player, date:date, name: itemMatch})
           var a = Auctions.find({name:itemMatch, sell:true, cost: {$ne: 0}}).fetch()
-          console.log("==============MEDIAN================")
-          console.log(a)
-          console.log(_.pluck(a, "cost"))
-          console.log(getMedian(_.pluck(a, "cost")))
           var localMedian = parseInt(getMedian(_.pluck(a, "cost")))
-          
           if(existing && existing.cost > cost){
               //console.log("Updating " + existing.player+":"+existing.name + " to " + cost)
               Auctions.update({_id:existing._id}, {$set: {cost:cost, updated_at: new Date()}})
@@ -99,11 +127,27 @@ if (Meteor.isServer) {
           else{
             //console.log("Inserting:")
             //console.log({player: player, sell:sell, median_cost: localMedian, item_id: item._id, market_price: item.market_price, date: date, name: itemMatch, original_cost: cost, cost: cost, created_at: new Date(), updated_at: new Date()})
-            Auctions.insert({player: player, sell:sell, median_cost: localMedian, item_id: item._id, market_price: item.market_price, date: date, name: itemMatch, original_cost: cost, cost: cost, created_at: new Date(), updated_at: new Date()})  
+            newAuction = Auctions.insert({player: player, sell:sell, median_cost: localMedian, item_id: item._id, market_price: item.market_price, date: date, name: itemMatch, original_cost: cost, cost: cost, created_at: new Date(), updated_at: new Date()})  
+            Meteor.call("checkAlert", newAuction)
           }
         }
       }
     },
+    checkAlert: function(newAuction){
+      item = Auctions.findOne({_id: newAuction})
+      //do some cleanup here
+      if(item.cost < 10 && (item.market_price > 1000 || item.median_cost > 1000)){
+        item.cost = item.cost*1000
+        Auctions.update({_id:newAuction}, {$set: {cost: item.cost}})
+      }
+
+      buying = WTB.findOne({name:item.name})
+      basePrice = _.max([item.market_price, parseInt(item.median_cost)])
+      if(buying && item.cost <= 0.75*basePrice){
+        sendAlert(item.name + " for sale " + item.cost + "pp from " + item.player + ".")
+      }
+    },
+
     addWtb: function(item){
       WTB.upsert({name: item}, {name:item})
 
