@@ -114,7 +114,7 @@ if (Meteor.isServer) {
           var cost = false;
           if(parts[i+1].match(/\d+/)){
             cost = parts[i+1].match(/\d+\.*\d*/)[0]
-            if(parts[i+1].match(/k$/i) || cost.match(/\./))
+            if(parts[i+1].match(/k/i) || cost.match(/\d\.\d/))
               cost = parseFloat(cost) * 1000
           }
           cost = cost ? parseInt(cost) : false
