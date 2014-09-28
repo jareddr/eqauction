@@ -133,7 +133,9 @@ if (Meteor.isServer) {
             var prevAuctions = Auctions.find({name:itemMatch, sell:true, cost: {$gt: 0}}).fetch()
             var localMedian = parseInt(getMedian(_.pluck(prevAuctions, "cost")))
             newAuction = Auctions.insert({player: player, sell:sell, median_cost: parseInt(localMedian), item_id: item._id, market_price: item.market_price, date: date, name: itemMatch, original_cost: cost, cost: cost, created_at: new Date(), updated_at: new Date()})  
-            Meteor.call("checkAlert", newAuction)
+            if(sell && cost > 0){
+              Meteor.call("checkAlert", newAuction)
+            }
           }
         }
       }
