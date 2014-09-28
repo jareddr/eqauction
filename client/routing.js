@@ -19,7 +19,13 @@ if (Meteor.isClient) {
   			path: '/', waitOn: function(){ 
   				return [Meteor.subscribe("auctions"), Meteor.subscribe("items"), Meteor.subscribe("wtb"), Meteor.subscribe("wts") ]
   			},
-  			data: function() { return {auctions: Auctions.find({cost: {$gt:0}, updated_at: {$gt: new Date(moment().date(moment().date()-2))} },{sort: {updated_at:-1}}).fetch(), wtb: WTB.find({}).fetch(), wts: WTS.find({}).fetch()} }
+  			data: function() { 
+  				return {
+  					auctions: Auctions.find({cost: {$gt:0}, updated_at: {$gt: new Date(moment().date(moment().date()-2))} },{sort: {updated_at:-1}}).fetch(),
+  					wtb: WTB.find({}).fetch(), 
+  					wts: WTS.find({}).fetch()
+  				}
+  			}
   		})
 	})
 	

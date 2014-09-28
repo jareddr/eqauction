@@ -1,5 +1,5 @@
 if (Meteor.isClient) {
-  
+
   	Template.auctions.events({
   		'click [rel="watch"]': function () {
   			Meteor.call("addWtb", this.name)
@@ -24,6 +24,9 @@ if (Meteor.isClient) {
 				return "deal"
 
 			return ""
+		},
+		prettyTime: function(date){
+			return moment.duration(moment().diff(moment(date))).humanize()
 		}
 	});
 
