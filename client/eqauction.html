@@ -36,7 +36,7 @@
 	<tr class="{{#if wtb}}wtb{{/if}} {{dealWatch}}">
 	<td>{{player}}</td>
 	<td>{{#if sell}}WTS{{else}}WTB{{/if}}</td>
-	<td>{{name}} {{#unless wtb}}<a href='#' rel='watch'><i class='ion-eye'></i></a>{{else}}<a href='#' rel='un-watch'><i class='ion-eye-disabled'></i></a>{{/unless}}</td>
+	<td><a href="{{wikiHref}}" target="_blank">{{name}}</a> {{#unless wtb}}<a href='#' rel='watch'><i class='ion-eye'></i></a>{{else}}<a href='#' rel='un-watch'><i class='ion-eye-disabled'></i></a>{{/unless}}</td>
 	<td align='right'><span class='cost'>{{cost}}</span></td>
 	<td align='right'>{{median_cost}}</td>
 	<td align='right'>{{market_price}}</td>

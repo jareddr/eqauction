@@ -27,6 +27,9 @@ if (Meteor.isClient) {
 		},
 		prettyTime: function(date){
 			return moment.duration(moment().diff(moment(date))).humanize()
+		},
+		wikiHref: function(){
+			return  "http://wiki.project1999.com/" + this.name.replace(/'/g, "%27").replace(/ /,"_")
 		}
 	});
 
