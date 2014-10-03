@@ -59,7 +59,7 @@ if (Meteor.isServer) {
   });
   
   Meteor.publish("auctions", function () {
-    return Auctions.find({updated_at: {$gt: new Date(moment().hours(moment().hours()-2))});
+    return Auctions.find({updated_at: {$gt: new Date(moment().hours(moment().hours()-2))}});
   });
 
   Meteor.publish("wts", function(){
@@ -129,7 +129,7 @@ if (Meteor.isServer) {
           else if(existing){
               Auctions.update({_id:existing._id}, {$set: {updated_at: new Date()}})
           }
-          else{
+          else if (cost){
             var prevAuctions = Auctions.find({name:itemMatch, sell:true, cost: {$gt: 0}}).fetch()
             var localMedian = parseInt(getMedian(_.pluck(prevAuctions, "cost")))
             newAuction = Auctions.insert({player: player, sell:sell, median_cost: parseInt(localMedian), item_id: item._id, market_price: item.market_price, date: date, name: itemMatch, original_cost: cost, cost: cost, created_at: new Date(), updated_at: new Date()})  

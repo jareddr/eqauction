@@ -19,7 +19,7 @@ if (Meteor.isServer){
 	      	return
 	      }
 	      Meteor.call("parseAuction", data.line)
-	      Log.insert({raw: data.line})
+	      //Log.insert({raw: data.line})
 	      this.response.writeHead(200, {'Content-Type': 'text/html'});
 	      this.response.end("ok.");
 	    }
