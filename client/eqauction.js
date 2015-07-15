@@ -1,4 +1,19 @@
 if (Meteor.isClient) {
+    Template.itemModal.events({
+      'click #watchAuction': function(event, template){
+        if(!template.data.buying){
+          Meteor.call("addWtb", template.data.name)
+          IonModal.close()
+        }
+        else{
+          Meteor.call("removeWtb", template.data.name)
+          IonModal.close()
+        }
+      },
+      'click #closeModal': function(event, template){
+        IonModal.close()
+      }
+    })
 
   	Template.auctions.events({
   		'click [rel="watch"]': function () {

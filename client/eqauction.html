@@ -21,12 +21,18 @@
     {{/contentFor}}
 </template>
 
-<template name="header">
-<div class='header'>
-	<div class='breadcrumbs'>
-	<a href='/'>Everquest Auction Tracker</a>
-	</div>
-</div>
+<template name="itemModal">
+  {{#ionModal}}
+      <div class="padding">
+        <img class='itemImage' src="http://p99.yourfirefly.com/item/{{name}}/fixed">
+        <button class="button button-block button-positive icon-left ion-card" id="watchAuction">
+          {{#if buying}}STOP LOOKING{{else}}LOOKING TO BUY{{/if}}
+        </button>
+        <button class="button button-block button-dark icon-left ion-close" id="closeModal">
+          DONE
+        </button>
+      </div>
+  {{/ionModal}}
 </template>
 
 <template name="auctions">
@@ -34,7 +40,7 @@
      {{#ionContent class="padding contact-detail"}}
      <div class="list">
       {{#each auctions}}
-      <a class="item item-avatar {{watching}} {{dealWatch}}" href="#" data-action='showActionSheet' data-url="{{wikiHref}}">
+      <a class="item item-avatar {{watching}} {{dealWatch}}" href="#" data-ion-modal="itemModal" data-buying="{{wtb}}" data-title="{{name}}" data-name="{{name}}">
         {{#if image}}<img src="http://wiki.project1999.com/{{image}}">{{/if}}
         <h2>{{name}}  <span class='cost'>{{costs}}</span></h2>
         <p>by <strong>{{player}}</strong> {{prettyTime updated_at}} ago <span class='cost'>{{costsCompare}}</span></p>
@@ -43,26 +49,6 @@
     </div>
      {{/ionContent}}
   {{/ionView}}
-<!-- <table>
-<thead>
-<tr>
-<th>Player</th><th>Action</th><th>Item</th><th>Cost</th><th>Local Median</th><th>Wiki Median</th><th>Updated</th>
-</tr>
-</thead>
-<tbody>
-{{#each auctions}}
-	<tr class="{{#if wtb}}wtb{{/if}} {{dealWatch}}">
-	<td>{{player}}</td>
-	<td>{{#if sell}}WTS{{else}}WTB{{/if}}</td>
-	<td><a href="{{wikiHref}}" target="_blank">{{name}}</a> {{#unless wtb}}<a href='#' rel='watch'><i class='ion-eye'></i></a>{{else}}<a href='#' rel='un-watch'><i class='ion-eye-disabled'></i></a>{{/unless}}</td>
-	<td align='right'><span class='cost'>{{cost}}</span></td>
-	<td align='right'>{{median_cost}}</td>
-	<td align='right'>{{market_price}}</td>
-	<td>{{prettyTime updated_at}} ago</td>
-	</tr>
-{{/each}} -->
-<!-- </tbody>
-</table> -->
 </template>
 
 <template name="loading">
