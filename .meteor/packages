@@ -4,13 +4,13 @@
 # but you can also edit it by hand.
 
 meteor-platform
-insecure
 iron:router
-mrt:nprogress
 http
 mrt:ionicons
 less
 mrt:moment
-
-
 email
+meteoric:ionic-sass
+meteoric:ionicons-sass
+meteoric:ionic
+mizzao:timesync

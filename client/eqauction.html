@@ -1,19 +1,22 @@
 <head>
   <title>Everquest Auction Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 </head>
 
 <body>
 </body>
 
 <template name="content">
-<section class='header'>
-{{> header }}
-</section>
-  <section class='map'>
-	  <div id="map-container">
-	    {{> yield}}
-	  </div>
-	</section>
+  {{#ionBody}}
+     {{> ionNavBar class="bar-dark"}}
+     {{#ionNavView}}
+       {{> yield}}
+     {{/ionNavView}}
+   {{/ionBody}}
+
+   {{#contentFor "headerTitle"}}
+      <h1 class="title">EQ Auctions</h1>
+    {{/contentFor}}
 </template>
 
 <template name="header">
@@ -25,7 +28,20 @@
 </template>
 
 <template name="auctions">
-<table>
+  {{#ionView}}
+     {{#ionContent class="padding contact-detail"}}
+     <div class="list">
+      {{#each auctions}}
+      <a class="item item-avatar {{watching}} {{dealWatch}}" href="#" data-action='showActionSheet' data-url="{{wikiHref}}">
+        {{#if image}}<img src="http://wiki.project1999.com/{{image}}">{{/if}}
+        <h2>{{name}}  <span class='cost'>{{costs}}</span></h2>
+        <p>by <strong>{{player}}</strong> {{prettyTime updated_at}} ago <span class='cost'>{{costsCompare}}</span></p>
+      </a>
+      {{/each}}
+    </div>
+     {{/ionContent}}
+  {{/ionView}}
+<!-- <table>
 <thead>
 <tr>
 <th>Player</th><th>Action</th><th>Item</th><th>Cost</th><th>Local Median</th><th>Wiki Median</th><th>Updated</th>
@@ -42,9 +58,9 @@
 	<td align='right'>{{market_price}}</td>
 	<td>{{prettyTime updated_at}} ago</td>
 	</tr>
-{{/each}}
-</tbody>
-</table>
+{{/each}} -->
+<!-- </tbody>
+</table> -->
 </template>
 
 <template name="loading">

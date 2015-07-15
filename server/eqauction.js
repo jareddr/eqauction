@@ -1,7 +1,7 @@
 
 if (Meteor.isServer) {
 
-  
+
 
   // var xmpp = Meteor.npmRequire('node-xmpp')
 
@@ -16,7 +16,7 @@ if (Meteor.isServer) {
   //     jid: Meteor.settings.chat_login,
   //     password: Meteor.settings.chat_password,
   //     host        : 'talk.google.com',
-  //     port        : 5222    
+  //     port        : 5222
   //     })
 
   //     client.on('online', function() {
@@ -43,7 +43,7 @@ if (Meteor.isServer) {
 
   getMedian = function(prices){
     prices.sort( function(a,b) {return a - b;} );
-    var median = false      
+    var median = false
     var half = Math.floor(prices.length/2);
 
     if(prices.length % 2)
@@ -57,7 +57,7 @@ if (Meteor.isServer) {
   Meteor.publish("items", function () {
     return Items.find({});
   });
-  
+
   Meteor.publish("auctions", function () {
     return Auctions.find({updated_at: {$gt: new Date(moment().hours(moment().hours()-2))}});
   });
@@ -68,7 +68,7 @@ if (Meteor.isServer) {
 
   Meteor.publish("wtb", function(){
     return WTB.find({})
-  })  
+  })
 
 //if ever want to price check on project1999 wiki
 //$('body').html().match(/<td>\s*(\d\d\d\d-\d\d-\d\d)\s*<\/td>\s*<td>\s*([^<]+)<\/td>\s*<td>\s*(\d+)\s*<\/td>/g)[1].replace(/^<td>/,"").replace(/<\/td>$/,"").split(/<\/td>\s*<td>/)
@@ -89,13 +89,13 @@ if (Meteor.isServer) {
         var itemMatch = false;
         var itemId = false;
         var matchPosition = 0;
-        
+
         if(parts[i].match(/^(wtb|buy|buying)$/i))
           sell = false
         else if(parts[i].match(/^(wts|sell|selling)$/i))
           sell = true
 
-        for(var j=i; j<parts.length && sell; j++){ 
+        for(var j=i; j<parts.length && sell; j++){
           match += " " + parts[j];
           var matchRe = new RegExp("^" + match.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + "$", "i")
           //console.log(matchRe)
@@ -107,10 +107,9 @@ if (Meteor.isServer) {
               matchPosition = j
           }
         }
-        
+
         if(itemMatch){
           i=matchPosition
-          var link = "http://wiki.project1999.com/" + itemMatch.replace(/'/g, "%27").replace(/ /,"_")
           var cost = false;
           if(parts[i+1].match(/\d+/)){
             cost = parts[i+1].match(/\d+\.*\d*/)[0]
@@ -122,17 +121,24 @@ if (Meteor.isServer) {
           Meteor.call('getWikiAverage', itemId)
           var item = Items.findOne({_id: itemId})
           var existing = Auctions.findOne({player:player, date:date, name: itemMatch})
+          var wtb = WTB.findOne({name:item.name}) ? true : false
           if(existing && existing.cost > cost){
               //console.log("Updating " + existing.player+":"+existing.name + " to " + cost)
-              Auctions.update({_id:existing._id}, {$set: {cost:cost, updated_at: new Date()}})
+              Auctions.update({_id:existing._id}, {$set: {cost:cost, updated_at: new Date(), image: item.image, wtb: wtb}})
           }
           else if(existing){
-              Auctions.update({_id:existing._id}, {$set: {updated_at: new Date()}})
+              updatedTimestamp = new Date(existing.updated_at).getTime()
+              //only move repeat auctions to the top of the list once every 5 mins
+              if(updatedTimestamp + 1000 * 60 * 5 < Date.now())
+                Auctions.update({_id:existing._id}, {$set: {updated_at: new Date(), image: item.image, wtb: wtb}})
+              else {
+                console.log("Not updating " + existing.name + " from " +  existing.player + " because it was last updated less than 5 min ago.")
+              }
           }
           else if (cost){
             var prevAuctions = Auctions.find({name:itemMatch, sell:true, cost: {$gt: 0}}).fetch()
             var localMedian = parseInt(getMedian(_.pluck(prevAuctions, "cost")))
-            newAuction = Auctions.insert({player: player, sell:sell, median_cost: parseInt(localMedian), item_id: item._id, market_price: item.market_price, date: date, name: itemMatch, original_cost: cost, cost: cost, created_at: new Date(), updated_at: new Date()})  
+            newAuction = Auctions.insert({player: player, sell:sell, median_cost: parseInt(localMedian), item_id: item._id, market_price: item.market_price, image: item.image, date: date, name: itemMatch, original_cost: cost, cost: cost, created_at: new Date(), updated_at: new Date(), wtb: wtb})
             if(sell && cost > 0){
               Meteor.call("checkAlert", newAuction)
             }
@@ -157,10 +163,12 @@ if (Meteor.isServer) {
 
     addWtb: function(item){
       WTB.upsert({name: item}, {name:item})
+      Auctions.update({name:item}, {$set: {wtb:true}}, {multi:true})
 
     },
     removeWtb: function(item){
       WTB.remove({name: item})
+      Auctions.update({name:item}, {$set: {wtb:false}}, {multi:true})
     },
     addWts: function(item){
       WTS.upsert({name:item}, {name:item})
@@ -171,24 +179,36 @@ if (Meteor.isServer) {
     getWikiAverage: function(item_id){
       var item = Items.findOne({_id: item_id})
 
-      if(!item.market_price){
+      if(!item.image){
         var link = "http://wiki.project1999.com/" + item.name.replace(/'/g, "%27").replace(/ /,"_")
         HTTP.get(link, {}, function(err,resp){
-            console.log(item.name)
-            console.log("\n====================\n")
-            var matches = resp.content.match(/<td>\s*(\d\d\d\d-\d\d-\d\d)\s*<\/td>\s*<td>\s*([^<]+)<\/td>\s*<td>\s*(\d+)\s*<\/td>/g)
-            var prices = [],
-              median = 0
-            _.each(matches, function(v,i){
-              //console.log(i + ' - ' + v)
-              var cost = v.replace(/^<td>/,"").replace(/<\/td>$/,"").split(/<\/td>\s*<td>/)[2]
-              prices.push(parseInt(cost.trim()))
-            })
+            if(resp && resp.content){
+              console.log(item.name)
+              console.log("\n====================\n")
+              var matches = resp.content.match(/<td>\s*(\d\d\d\d-\d\d-\d\d)\s*<\/td>\s*<td>\s*([^<]+)<\/td>\s*<td>\s*(\d+)\s*<\/td>/g)
+              var prices = [],
+                median = 0
+              _.each(matches, function(v,i){
+                //console.log(i + ' - ' + v)
+                var cost = v.replace(/^<td>/,"").replace(/<\/td>$/,"").split(/<\/td>\s*<td>/)[2]
+                prices.push(parseInt(cost.trim()))
+              })
 
-            median = getMedian(prices)
-            //console.log(median)
-            Items.update({_id: item_id}, {$set: {market_price: median}})  
-            Auctions.update({item_id: item_id}, {$set: {market_price: median}}, {multi:true})
+              var img = resp.content.match(/\/images\/Item_\d+\.png/)
+
+              median = getMedian(prices)
+              updateSet = {market_price: median}
+
+              if(img.length){
+                updateSet.image = img[0]
+              }
+              console.log("Updating items and auctions entries", updateSet)
+              Items.update({_id: item_id}, {$set: updateSet })
+              Auctions.update({item_id: item_id}, {$set: updateSet}, {multi:true})
+            }
+            else{
+              console.log("[ERROR] Could not look up " + item.name + " on p1999 wiki")
+            }
         });
       }
     }
@@ -218,7 +238,7 @@ if (Meteor.isServer) {
 
     //Meteor.call("parseAuction",  "[Wed Sep 17 23:46:55 2014] Foggon auctions, 'WTS - Black Sapphire 3k obo Spell: Talisman of the Brute 2k, Mucilaginous Girdle 1.2k, Rod of Oblations 500p, Acid Etched War Sword 4k'",true)
 
-    
+
 
   });
 }

@@ -6,16 +6,43 @@ if (Meteor.isClient) {
   		},
   		'click [rel="un-watch"]': function () {
   			Meteor.call("removeWtb", this.name)
-  		}  		
+  		},
+      'click [data-action=showActionSheet]': function (event, template) {
+          var itemName = this.name
+          var buying = false
+          if(WTB.findOne({name:this.name})){
+            buying = true
+          }
+          IonActionSheet.show({
+            titleText: this.name,
+            buttons: [
+              { text: buying ? 'Stop looking <i class="icon ion-card"></i>' : 'Looking to buy <i class="icon ion-card"></i>' },
+              { text: 'View wiki page <i class="icon ion-share"></i>' },
+            ],
+            cancelText: 'Cancel',
+            cancel: function() {
+
+            },
+            buttonClicked: function(index) {
+              if (index === 0) {
+                console.log("WTB",itemName)
+                if(buying)
+                  Meteor.call("removeWtb", itemName)
+                else
+                  Meteor.call("addWtb", itemName)
+              }
+              if (index === 1) {
+                window.open("http://wiki.project1999.com/" + itemName.replace(/'/g, "%27").replace(/ /,"_"))
+              }
+              return true;
+            }
+          });
+        }
   	});
 	Template.auctions.helpers({
-		wtb: function () {
-			if(WTB.findOne({name:this.name})){
-				return true
-			}
-
-			return false
-		},
+    watching: function(){
+      return this.wtb ? 'watching' : ""
+    },
 		dealWatch: function(){
 			var baseCompare = _.max([parseInt(this.median_cost), parseInt(this.market_price)])
 			if(this.cost <= baseCompare * 0.50)
@@ -26,14 +53,25 @@ if (Meteor.isClient) {
 			return ""
 		},
 		prettyTime: function(date){
-			return moment.duration(moment().diff(moment(date))).humanize()
+			return moment.duration(moment(TimeSync.serverTime(null, 30000)).diff(moment(date))).humanize()
 		},
+    costs: function(){
+      return this.cost
+    },
+    costsCompare: function(){
+      ret = []
+      if(this.median_cost)
+        ret.push("eqa:" + this.median_cost)
+      if(this.market_price)
+        ret.push("wiki:" + this.market_price)
+      return ret.join(" | ")
+    },
 		wikiHref: function(){
 			return  "http://wiki.project1999.com/" + this.name.replace(/'/g, "%27").replace(/ /,"_")
 		}
 	});
 
   Meteor.startup(function() {
-   
+
   })
 }

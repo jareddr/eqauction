@@ -1,0 +1,25 @@
+$loading-font-size: 22px;
+
+@import '.meteor/local/build/programs/server/assets/packages/meteoric_ionic-sass/ionic';
+@import '.meteor/local/build/programs/server/assets/packages/meteoric_ionicons-sass/ionicons';
+
+.contact-detail {
+  background: $stable;
+}
+
+.cost{
+  float:right;
+}
+
+
+.watching{
+  background-color: #FDF2F1;
+
+  &.crazydeal{
+    background-color: rgb(243, 253, 241);
+  }
+
+  &.deal{
+    background-color: #F1F2FD;
+  }
+}
