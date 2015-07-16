@@ -8,17 +8,24 @@
 <body>
 </body>
 
+<template name="loading">
+  {{#ionView}}
+     {{#ionContent class="padding"}}
+
+     {{/ionContent}}
+  {{/ionView}}
+  {{#contentFor "headerTitle"}}
+     <h1 class="title">EQ Auctions</h1>
+   {{/contentFor}}
+</template>
+
 <template name="content">
   {{#ionBody}}
-     {{> ionNavBar class="bar-dark"}}
-     {{#ionNavView}}
+     {{> ionNavBar class="bar-dark" transition="false"}}
+     {{#ionNavView transition="false"}}
        {{> yield}}
      {{/ionNavView}}
    {{/ionBody}}
-
-   {{#contentFor "headerTitle"}}
-      <h1 class="title">EQ Auctions</h1>
-    {{/contentFor}}
 </template>
 
 <template name="itemModal">
@@ -37,7 +44,7 @@
 
 <template name="auctions">
   {{#ionView}}
-     {{#ionContent class="padding contact-detail"}}
+     {{#ionContent class="padding"}}
      <div class="list">
       {{#each auctions}}
       <a class="item item-avatar {{watching}} {{dealWatch}}" href="#" data-ion-modal="itemModal" data-buying="{{wtb}}" data-title="{{name}}" data-name="{{name}}">
@@ -49,7 +56,7 @@
     </div>
      {{/ionContent}}
   {{/ionView}}
-</template>
-
-<template name="loading">
+  {{#contentFor "headerTitle"}}
+     <h1 class="title">EQ Auctions</h1>
+   {{/contentFor}}
 </template>

@@ -7,15 +7,23 @@ if (Meteor.isClient) {
 	Router.map(function() {
 	  	this.route('auctions', {
   			path: '/', waitOn: function(){
-  				return [Meteor.subscribe("auctions"), Meteor.subscribe("items"), Meteor.subscribe("wtb"), Meteor.subscribe("wts") ]
+  				return [Meteor.subscribe("auctions", 2), Meteor.subscribe("wtb"), Meteor.subscribe("wts") ]
   			},
   			data: function() {
   				return {
-  					auctions: Auctions.find({cost: {$gt:0}, updated_at: {$gt: new Date(moment().hours(moment().hours()-2))} },{sort: {updated_at:-1}}).fetch(),
+  					auctions: Auctions.find({cost: {$gt:0}},{sort: {updated_at:-1}}).fetch(),
   					wtb: WTB.find({}).fetch(),
   					wts: WTS.find({}).fetch()
   				}
-  			}
+  			},
+				action: function(){
+					if(this.ready()) {
+						IonLoading.hide()
+						this.render()
+					}else{
+						this.render('loading');
+					}
+				}
   		})
 	})
 

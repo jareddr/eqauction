@@ -86,6 +86,15 @@ if (Meteor.isClient) {
 		}
 	});
 
+  Template.loading.onRendered(function(){
+      IonLoading.show({
+        template: '<h3>Loading…</h3><p><i class="ion-loading-c"></i></p>',
+      })
+  })
+
+  Template.loading.onDestroyed(function(){
+  })
+
   Meteor.startup(function() {
 
   })

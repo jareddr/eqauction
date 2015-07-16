@@ -58,8 +58,9 @@ if (Meteor.isServer) {
     return Items.find({});
   });
 
-  Meteor.publish("auctions", function () {
-    return Auctions.find({updated_at: {$gt: new Date(moment().hours(moment().hours()-2))}});
+  Meteor.publish("auctions", function (hoursBack) {
+    hoursBack = hoursBack || 2
+    return Auctions.find({updated_at: {$gt: new Date(moment().hours(moment().hours()-hoursBack))}});
   });
 
   Meteor.publish("wts", function(){
