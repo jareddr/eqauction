@@ -11,7 +11,12 @@
 <template name="loading">
   {{#ionView}}
      {{#ionContent class="padding"}}
-
+     <div class="backdrop visible backdrop-loading active"></div>
+     <div class="loading-container visible active">
+         <div class="loading">
+             <h3>Loaded {{auctionCount}} auctions</h3><p><i class="ion-loading-c"></i></p>
+         </div>
+       </div>
      {{/ionContent}}
   {{/ionView}}
   {{#contentFor "headerTitle"}}

@@ -18,7 +18,6 @@ if (Meteor.isClient) {
   			},
 				action: function(){
 					if(this.ready()) {
-						IonLoading.hide()
 						this.render()
 					}else{
 						this.render('loading');
