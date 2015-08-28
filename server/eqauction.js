@@ -58,9 +58,25 @@ if (Meteor.isServer) {
     return Items.find({});
   });
 
-  Meteor.publish("auctions", function (hoursBack) {
-    hoursBack = hoursBack || 2
-    return Auctions.find({updated_at: {$gt: new Date(moment().hours(moment().hours()-hoursBack))}});
+  Meteor.publish("auctions", function (options) {
+    console.log(options)
+
+    var searchObject = {},
+        limitObject = {}
+    if(options.hoursBack){
+      searchObject.updated_at = {$gt: new Date(moment().hours(moment().hours()-options.hoursBack))}
+    }
+
+    if(options.search){
+      var matchRe = new RegExp(options.search.trim(), "i")
+      searchObject.name = matchRe
+    }
+
+    if(options.limit){
+      limitObject.limit = parseInt(options.limit)
+    }
+
+    return Auctions.find(searchObject, limitObject);
   });
 
   Meteor.publish("wts", function(){

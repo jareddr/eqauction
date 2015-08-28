@@ -7,7 +7,7 @@ if (Meteor.isClient) {
 	Router.map(function() {
 	  	this.route('auctions', {
   			path: '/', waitOn: function(){
-  				return [Meteor.subscribe("auctions", 2), Meteor.subscribe("wtb"), Meteor.subscribe("wts") ]
+  				return [Meteor.subscribe("auctions", {limit:200}), Meteor.subscribe("wtb"), Meteor.subscribe("wts") ]
   			},
   			data: function() {
   				return {
