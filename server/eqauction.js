@@ -166,7 +166,7 @@ if (Meteor.isServer) {
     checkAlert: function(newAuction){
       item = Auctions.findOne({_id: newAuction})
       //do some cleanup here
-      if(item.cost < 10 && (item.market_price > 1000 || item.median_cost > 1000)){
+      if(item.cost < 99 && (item.market_price > 1000 || item.median_cost > 1000)){
         item.cost = item.cost*1000
         Auctions.update({_id:newAuction}, {$set: {cost: item.cost}})
       }
