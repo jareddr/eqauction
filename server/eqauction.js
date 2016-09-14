@@ -200,32 +200,47 @@ if (Meteor.isServer) {
         var link = "http://wiki.project1999.com/" + item.name.replace(/'/g, "%27").replace(/ /,"_")
         HTTP.get(link, {}, function(err,resp){
             if(resp && resp.content){
-              console.log(item.name)
-              console.log("\n====================\n")
-              var matches = resp.content.match(/<td>\s*(\d\d\d\d-\d\d-\d\d)\s*<\/td>\s*<td>\s*([^<]+)<\/td>\s*<td>\s*(\d+)\s*<\/td>/g)
-              var prices = [],
-                median = 0
-              _.each(matches, function(v,i){
-                //console.log(i + ' - ' + v)
-                var cost = v.replace(/^<td>/,"").replace(/<\/td>$/,"").split(/<\/td>\s*<td>/)[2]
-                prices.push(parseInt(cost.trim()))
-              })
-
               var img = resp.content.match(/\/images\/Item_\d+\.png/)
-
-              median = getMedian(prices)
-              updateSet = {market_price: median}
-
               if(img.length){
-                updateSet.image = img[0]
+                updateSet = {image: img[0]}
+                console.log("Updating items and auctions entries", updateSet)
+                Items.update({_id: item_id}, {$set: updateSet })
+                Auctions.update({item_id: item_id}, {$set: updateSet}, {multi:true})
               }
-              console.log("Updating items and auctions entries", updateSet)
-              Items.update({_id: item_id}, {$set: updateSet })
-              Auctions.update({item_id: item_id}, {$set: updateSet}, {multi:true})
             }
             else{
               console.log("[ERROR] Could not look up " + item.name + " on p1999 wiki")
             }
+        });
+      }
+      
+      if(!item.last_market_check || Date.now()-parseInt(item.last_market_check) > 8640000)
+      {
+        console.log("Refreshing market price")
+      
+        var link = "http://prerender.starblade.io/http://www.p99auctions.com/Loot/"+item.name.replace(/\s+/g, " ").replace(/'/g, "%27").replace(/ /g,"_")
+        HTTP.get(link, {}, function(err,resp){
+              if(resp && resp.content){
+                var price = resp.content.match(/summary\(\)\.priceText">([\d\.K]+)pp<\/span>/)
+                var updateSet = {last_market_check: Date.now()}
+                if(price){
+                  var pp = price[1].trim().toLowerCase()
+                  
+                  if(pp.match(/k/)){
+                    pp = parseInt(pp.split("k")[0]) * 1000
+                  }
+                  if(pp){
+                    console.log(item.name, " market price ", pp)
+                    updateSet.market_value = parseInt(pp)
+                    Auctions.update({item_id: item_id}, {$set: updateSet}, {multi:true})
+                  }
+                  console.log("Updating items and auctions entries", item.name, updateSet)
+                }
+                Items.update({_id: item_id}, {$set: updateSet })
+              }
+              else{
+                console.log("[ERROR] Could not look up " + item.name + " on p99 auctions")
+              }
         });
       }
     }
